@@ -7,18 +7,33 @@ interface MemberEntity {
   avatar_url: string;
 }
 
-export const ListPage: React.FC = () => {
+const useUserCollection = () => {
   const [members, setMembers] = React.useState<MemberEntity[]>([]);
+  const loadUsers = (filter: string) => {
+    fetch(`https://api.github.com/orgs/${filter}/members`)
+      .then((response) => response.json())
+      .then(setMembers);
+  };
+  return { members, loadUsers };
+};
+
+export const ListPage: React.FC = () => {
+  const [filter, setFilter] = React.useState("lemoncode");
+  const { members, loadUsers } = useUserCollection();
 
   React.useEffect(() => {
-    fetch(`https://api.github.com/orgs/lemoncode/members`)
-      .then((response) => response.json())
-      .then((json) => setMembers(json));
+    loadUsers(filter);
   }, []);
 
   return (
     <>
       <h2>Hello from List page</h2>+{" "}
+      <input
+        value={filter}
+        defaultValue="lemoncode"
+        onChange={(e) => setFilter(e.target.value)}
+      />
+      <button onClick={() => loadUsers(filter)}>Get users</button>
       <div className="list-user-list-container">
         <span className="list-header">Avatar</span>
         <span className="list-header">Id</span>
